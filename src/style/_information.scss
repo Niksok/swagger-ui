@@ -26,6 +26,10 @@
         @include text_body();
     }
 
+    h2 {
+        font-weight: 300;
+    }
+
     a
     {
         font-size: 14px;
@@ -62,6 +66,13 @@
 
         @include text_body();
 
+        span {
+            display: block;
+            top: 15px;
+            position: relative;
+            line-height: 1.1;
+        }
+
         small
         {
             font-size: 10px;
@@ -76,8 +87,12 @@
 
             vertical-align: super;
 
-            border-radius: 57px;
+            border-radius: 3px;
             background: $info-title-small-background-color;
+
+            height: 25px;
+
+            line-height: 1;
 
             pre
             {

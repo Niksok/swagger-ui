@@ -266,7 +266,7 @@ export default class ParameterRow extends Component {
             ) : null
           }
 
-          { bodyParam ? null
+          { bodyParam || !isExecute ? null
             : <JsonSchemaForm fn={fn}
                               getComponent={getComponent}
                               value={ value }
@@ -291,7 +291,7 @@ export default class ParameterRow extends Component {
           }
 
           {
-            !bodyParam && isExecute ? 
+            !bodyParam && isExecute ?
             <ParameterIncludeEmpty
               onChange={this.onChangeIncludeEmpty}
               isIncluded={specSelectors.parameterInclusionSettingFor(pathMethod, param.get("name"), param.get("in"))}

@@ -1,0 +1,949 @@
+openapi: 3.0.0
+servers:
+  - url: https://__API_URL__
+info:
+  version: "0.0.1"
+  title: Bot API
+  description:
+    HTTP интерфейс для управления ботами
+    <h2>__Создание бота__</h2>
+    <p>Для создания учетной записи бота, обратитесь к [МегаБоту](https://__PROFILE_URL__70001)</p>
+    <h2>__Авторизация бота__</h2>
+    <p>Каждый бот при создании получает уникальный токен аутентификации. Токен необходимо передавать в каждом запросе. Пример токена&#58;
+    <pre><code>001.2659914704.0218887601:747432131</code></pre>
+    <h2>__Отправка запросов__</h2>
+    <p>Все запросы к Bot API необходимо выполнять по протоколу HTTPS.</p>
+    <p>API поддерживает GET и POST методы. Параметры передаются двумя способами&#58;
+      <ul>
+        <li>[URL query string](https://en.wikipedia.org/wiki/Query_string)</li>
+        <li>[multipart/form-data](https://ru.wikipedia.org/wiki/Multipart/form-data) (используется для загрузки файлов)</li>
+      </ul>
+    </p>
+    <p>Названия методов и передаваемые параметры чувствительны к регистру.</p>
+    <h2>__Обработка ответов__</h2>
+    <p>Ответ представляет из себя JSON объект, в котором всегда есть boolean поле `ok`, отражающее статус выполнения запроса (true или false). Также может быть необязательное string поле `description` c детальным описанием результата.</p>
+    <h2>__Получение событий от сервера__</h2>
+    <p>Для получения серверных событий используйте методы из группы __events__ в режиме
+    [long polling](http://en.wikipedia.org/wiki/Push_technology#Long_polling) запроса.
+tags:
+  - name: self
+  - name: messages
+  - name: chat
+  - name: files
+  - name: events
+paths:
+  /self/get:
+    get:
+      summary: информация о боте
+      description: Метод можно использовать для проверки валидности токена.
+      tags:
+        - self
+      parameters:
+         - $ref: '#/components/parameters/Token'
+      responses:
+        200:
+          description: Запрос успешно обработан. Сервер вернул информацию о боте.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bot'
+  /messages/sendText:
+    get:
+      summary: отправка текстового сообщения
+      tags:
+        - messages
+      parameters:
+        - $ref: '#/components/parameters/Token'
+        - $ref: '#/components/parameters/ChatId'
+        - $ref: '#/components/parameters/Text'
+        - $ref: '#/components/parameters/ReplyMsgId'
+        - $ref: '#/components/parameters/ForwardChatId'
+        - $ref: '#/components/parameters/ForwardMsgId'
+      responses:
+        200:
+          $ref: '#/components/responses/200MsgOK'
+  /messages/sendFile:
+    get:
+      summary: отправка ранее загруженного файла
+      tags:
+        - messages
+      parameters:
+        - $ref: '#/components/parameters/Token'
+        - $ref: '#/components/parameters/ChatId'
+        - $ref: '#/components/parameters/FileId'
+        - $ref: '#/components/parameters/Caption'
+        - $ref: '#/components/parameters/ReplyMsgId'
+        - $ref: '#/components/parameters/ForwardChatId'
+        - $ref: '#/components/parameters/ForwardMsgId'
+      responses:
+        200:
+          $ref: '#/components/responses/200MsgOK'
+    post:
+      summary: загрузка и отправка нового файла
+      tags:
+        - messages
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+
+      parameters:
+        - $ref: '#/components/parameters/Token'
+        - $ref: '#/components/parameters/ChatId'
+        - $ref: '#/components/parameters/Caption'
+        - $ref: '#/components/parameters/ReplyMsgId'
+        - $ref: '#/components/parameters/ForwardChatId'
+        - $ref: '#/components/parameters/ForwardMsgId'
+      responses:
+        200:
+          $ref: '#/components/responses/200MsgLoadFileOK'
+  /messages/sendVoice:
+    get:
+      summary: отправка ранее загруженного голосового сообщения
+      description: Если вы хотите, чтобы клиент отображал этот файл как воспроизводимое голосовое сообщение, он должен быть в формате [aac](https://ru.wikipedia.org/wiki/Advanced_Audio_Coding), [ogg](https://ru.wikipedia.org/wiki/Ogg) или [m4a](https://ru.wikipedia.org/wiki/MPEG-4_Part_14)
+      tags:
+        - messages
+      parameters:
+        - $ref: '#/components/parameters/Token'
+        - $ref: '#/components/parameters/ChatId'
+        - $ref: '#/components/parameters/FileId'
+        - $ref: '#/components/parameters/ReplyMsgId'
+        - $ref: '#/components/parameters/ForwardChatId'
+        - $ref: '#/components/parameters/ForwardMsgId'
+      responses:
+        200:
+          $ref: '#/components/responses/200MsgOK'
+    post:
+      summary: загрузка и отправка нового голосового сообщения
+      description: Если вы хотите, чтобы клиент отображал этот файл как воспроизводимое голосовое сообщение, он должен быть в формате [aac](https://ru.wikipedia.org/wiki/Advanced_Audio_Coding), [ogg](https://ru.wikipedia.org/wiki/Ogg) или [m4a](https://ru.wikipedia.org/wiki/MPEG-4_Part_14)
+      tags:
+        - messages
+      parameters:
+        - $ref: '#/components/parameters/Token'
+        - $ref: '#/components/parameters/ChatId'
+        - $ref: '#/components/parameters/ReplyMsgId'
+        - $ref: '#/components/parameters/ForwardChatId'
+        - $ref: '#/components/parameters/ForwardMsgId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          $ref: '#/components/responses/200MsgLoadFileOK'
+  /messages/editText:
+    get:
+      summary: редактировать текстовое сообщение
+      tags:
+      - messages
+      parameters:
+      - $ref: '#/components/parameters/Token'
+      - $ref: '#/components/parameters/ChatId'
+      - $ref: '#/components/parameters/MsgId'
+      - $ref: '#/components/parameters/Text'
+      responses:
+        200:
+          $ref: '#/components/responses/200MsgOK'
+  /messages/deleteMessages:
+    get:
+      summary: удалить сообщение
+      description: На удаление наложены следующие ограничения&#58;
+        <ul>
+          <li>Сообщение может быть удалено только если оно было отправлено менее 48 часов назад</li>
+          <li>Бот может удалить исходящие сообщения в приватных чатах и группах</li>
+          <li>Бот может удалить любое сообщение в группе, если он является администратором</li>
+        <ul>
+      tags:
+      - messages
+      parameters:
+      - $ref: '#/components/parameters/Token'
+      - $ref: '#/components/parameters/ChatId'
+      - $ref: '#/components/parameters/MsgIds'
+      responses:
+        200:
+          $ref: '#/components/responses/200OK'
+  /chats/sendActions:
+    get:
+      summary: отправка действий в чат
+      description: Необходимо вызывать этот метод каждый раз при изменении текущих действий, или каждые 10 секунд, если действия не изменились. После отправки запроса без активных действий повторно уведомлять об их отсутствии не следует.
+      tags:
+      - chat
+      parameters:
+      - $ref: '#/components/parameters/Token'
+      - $ref: '#/components/parameters/ChatId'
+      - $ref: '#/components/parameters/Action'
+      responses:
+        200:
+          $ref: '#/components/responses/200OK'
+  /chats/getInfo:
+    get:
+      summary: информация о чате
+      tags:
+      - chat
+      parameters:
+      - $ref: '#/components/parameters/Token'
+      - $ref: '#/components/parameters/ChatId'
+      responses:
+        200:
+          $ref: '#/components/responses/200ChatInfoOK'
+  /chats/getAdmins:
+    get:
+      summary: список администраторов чата
+      tags:
+      - chat
+      parameters:
+      - $ref: '#/components/parameters/Token'
+      - $ref: '#/components/parameters/ChatIdOnly'
+      responses:
+        200:
+          $ref: '#/components/responses/200ChatAdminsOK'
+  /files/getInfo:
+    get:
+      summary: получение информации о файле
+      tags:
+      - files
+      parameters:
+      - $ref: '#/components/parameters/Token'
+      - $ref: '#/components/parameters/FileId'
+      responses:
+        200:
+          $ref: '#/components/responses/200FileInfoOK'
+  /events/get:
+    get:
+      summary: получение событий
+      description: Каждое событие имеет идентификатор `eventId`. При вызове метода нужно передать максимальный из известных идентификаторов событий в параметре `lastEventId`. При первом вызове данного метода в качестве значения этого параметра следует передать 0. При отсутствии событий на сервере в момент выполнения запроса и в течение `pollTime` секунд с этого момента метод вернёт пустой массив `events`.
+      tags:
+      - events
+      parameters:
+        - $ref: '#/components/parameters/Token'
+        - $ref: '#/components/parameters/LastEventId'
+        - $ref: '#/components/parameters/PollTime_s'
+      responses:
+        200:
+          $ref: '#/components/responses/200EventsGetOK'
+components:
+  parameters:
+    Token:
+      in: query
+      name: token
+      schema:
+        type: string
+      required: true
+      description: секретный токен
+      example: 001.2659914704.0218887601:747432131
+    Aimsid:
+      in: query
+      name: aimsid
+      schema:
+        type: string
+      required: true
+      description: секретный токен
+      example: 001.2659914704.0218887601:747432131
+    R:
+      in: query
+      name: r
+      schema:
+        type: string
+      description: универсальный уникальный идентификатор
+      example: c6052c6a-26c3-4277-a3dd-fd9d337314ee
+    Timeout_ms:
+      in: query
+      name: timeout
+      schema:
+        type: string
+      description: таймаут в милесекундах
+      example: 60000
+    ChatId:
+      in: query
+      name: chatId
+      schema:
+        type: string
+      required: true
+      description: id чата или пользователя
+      example: 681869378@chat.agent
+    ChatIdOnly:
+      in: query
+      name: chatId
+      schema:
+        type: string
+      required: true
+      description: id чата
+      example: 681869378@chat.agent
+    Text:
+      in: query
+      name: text
+      schema:
+        type: string
+      required: true
+      description: текст сообщения
+      example: Тестовое сообщение
+    FileId:
+      in: query
+      name: fileId
+      schema:
+        type: string
+      required: true
+      description: id ранее загруженного файла
+    File:
+      in: query
+      name: file
+      schema:
+        type: string
+        format: binary
+      required: true
+      description: файл
+    Caption:
+      in: query
+      name: caption
+      schema:
+        type: string
+      description: подпись к файлу
+    MsgId:
+      in: query
+      name: msgId
+      schema:
+        type: integer
+      required: true
+      description: id сообщения
+    MsgIds:
+      in: query
+      name: msgId
+      schema:
+        type: array
+        items:
+          type: integer
+      required: true
+      description: id сообщений
+    ReplyMsgId:
+      in: query
+      name: replyMsgId
+      schema:
+        type: array
+        items:
+          type: integer
+      description: id цитируемого сообщения. Не может быть передано одновременно с forwardChatId и forwardMsgId
+    LastEventId:
+      in: query
+      name: lastEventId
+      schema:
+        type: integer
+      required: true
+      description: последний id события
+    PollTime_s:
+      in: query
+      name: pollTime
+      schema:
+        type: integer
+      required: true
+      description: время удержания соединения (в секундах)
+    ForwardChatId:
+      in: query
+      name: forwardChatId
+      schema:
+        type: string
+      description: id чата, из которого будет переслано сообщение. Передается только с forwardMsgId. Не может быть передано с replyMsgId
+    ForwardMsgId:
+      in: query
+      name: forwardMsgId
+      schema:
+        type: array
+        items:
+          type: integer
+      description: id пересылаемого сообщения. Передается только с forwardChatId. Не может быть передано с replyMsgId
+    Action:
+      in: query
+      name: actions
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - looking
+            - typing
+      required: true
+      description: текущее действия в чате. Отправьте пустое значение, если все действия завершены.
+  schemas:
+    Bot:
+      type: object
+      properties:
+        userID:
+          type: string
+          description: уникальный идентификатор
+          example: "747432131"
+        nick:
+          type: string
+          description: уникальный ник
+          example: "test_api_bot"
+        firstName:
+          type: string
+          description: имя
+          example: "TestBot"
+        about:
+          type: string
+          description: описание бота
+          example: The description of the bot
+        photo:
+          type: array
+          items:
+            $ref: '#/components/schemas/URL'
+        ok:
+          type: boolean
+          description: статус запроса
+      required:
+        - userID
+        - nick
+    Chat:
+      type: object
+      properties:
+        inviteLink:
+          type: string
+          example: https://__PROFILE_URL__AoLFkoBCn4MpaN0DjUI
+        public:
+          type: boolean
+          example: true
+        title:
+          type: string
+          example: TestChat
+        group:
+          type: string
+          example: group
+        ok:
+          type: boolean
+          description: статус запроса
+    Admins:
+      type: object
+      properties:
+        admins:
+          type: array
+          items:
+            $ref: '#/components/schemas/Admin'
+    Admin:
+      type: object
+      properties:
+        userId:
+          type: string
+        creator:
+          type: boolean
+    FileInfo:
+      type: object
+      properties:
+        type:
+          type: string
+          example: 'video'
+        size:
+          type: integer
+          example: 20971520
+        filename:
+          type: string
+          example: 'VIDEO.mkv'
+        url:
+          type: string
+          example: 'https://example.com/get/88MfCLBHphvOAOeuzYhZfW5b7bcfa31ab'
+    URL:
+      type: object
+      properties:
+        url:
+          type: string
+          example: 'https://example.com/expressions/getAsset?f=native&type=largeBuddyIcon&id=0110379ad781bcc4a969242f1f5a93144362'
+    Msg:
+      type: object
+      properties:
+        msgId:
+          type: string
+          example: '57883346846815032'
+        ok:
+          type: boolean
+          description: статус запроса
+    MsgLoadFile:
+      type: object
+      properties:
+        fileId:
+          type: string
+          example: '0dC76vcKS3XZOtG5DVs9y15d1daefa1ae'
+        msgId:
+          type: string
+          example: '57883346846815032'
+        ok:
+          type: boolean
+          description: статус запроса
+    Ok:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          description: статус запроса
+    Events:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/EventDataMessage'
+              - $ref: '#/components/schemas/EventEditedMessage'
+              - $ref: '#/components/schemas/EventDeletedMessage'
+              - $ref: '#/components/schemas/EventPinnedMessage'
+              - $ref: '#/components/schemas/EventUnpinnedMessage'
+              # - $ref: '#/components/schemas/EventNewChatMembers'
+              # - $ref: '#/components/schemas/EventLeftChatMembers'
+              # - $ref: '#/components/schemas/EventChangeChatInfo'
+    # EventChangeChatInfo:
+    #   type: object
+    #   properties:
+    #     eventId:
+    #       type: integer
+    #       example: 8
+    #     type:
+    #       type: string
+    #       example: "changedChatInfo"
+    #     payload:
+    #       type: object
+    #       properties:
+    #         chat:
+    #           type: object
+    #           properties:
+    #             chatId:
+    #               type: string
+    #               example: 681869378@chat.agent
+    #             type:
+    #               type: string
+    #               example: group
+    #             photo:
+    #               type: array
+    #               items:
+    #                 type: object
+    #                 properties:
+    #                   url:
+    #                     type: string
+    #                     example: https://example.com/photo.jpg
+    #             title:
+    #               type: string
+    #               example: The best group
+    #             inviteLink:
+    #               type: string
+    #               example: example.com/joinChat785gs4jsgfj48
+    #             public:
+    #               type: boolean
+    #               example: true
+    #             joinModeration:
+    #               type: boolean
+    #               example: false
+    #             rules:
+    #               type: string
+    #               example: "Don't spam"
+    # EventLeftChatMembers:
+    #   type: object
+    #   properties:
+    #     eventId:
+    #       type: integer
+    #       example: 7
+    #     type:
+    #       type: string
+    #       example: "leftChatMembers"
+    #     payload:
+    #       type: object
+    #       properties:
+    #         chat:
+    #           type: object
+    #           properties:
+    #             chatId:
+    #               type: string
+    #               example: 681869378@chat.agent
+    #             type:
+    #               type: string
+    #               example: group
+    #             title:
+    #               type: string
+    #               example: The best group
+    #         leftMembers:
+    #           type: array
+    #           items:
+    #             type: object
+    #             properties:
+    #               userId:
+    #                 type: string
+    #                 example: 1234567890
+    #               firstName:
+    #                 type: string
+    #                 example: Name
+    #               lastName:
+    #                 type: string
+    #                 example: SurName
+    #         removedBy:
+    #           type: object
+    #           properties:
+    #             userId:
+    #               type: string
+    #               example: 9876543210
+    #             firstName:
+    #               type: string
+    #               example: Name
+    #             lastName:
+    #               type: string
+    #               example: SurName
+    # EventNewChatMembers:
+    #   type: object
+    #   properties:
+    #     eventId:
+    #       type: integer
+    #       example: 6
+    #     type:
+    #       type: string
+    #       example: "newChatMembers"
+    #     payload:
+    #       type: object
+    #       properties:
+    #         chat:
+    #           type: object
+    #           properties:
+    #             chatId:
+    #               type: string
+    #               example: 681869378@chat.agent
+    #             type:
+    #               type: string
+    #               example: group
+    #             title:
+    #               type: string
+    #               example: The best group
+    #         newMembers:
+    #           type: array
+    #           items:
+    #             type: object
+    #             properties:
+    #               userId:
+    #                 type: string
+    #                 example: 1234567890
+    #               firstName:
+    #                 type: string
+    #                 example: Name
+    #               lastName:
+    #                 type: string
+    #                 example: SurName
+    #         addedBy:
+    #           type: object
+    #           properties:
+    #             userId:
+    #               type: string
+    #               example: 9876543210
+    #             firstName:
+    #               type: string
+    #               example: Name
+    #             lastName:
+    #               type: string
+    #               example: SurName
+    EventUnpinnedMessage:
+      type: object
+      properties:
+        eventId:
+          type: integer
+          example: 5
+        type:
+          type: string
+          example: "unpinnedMessage"
+        payload:
+          type: object
+    EventPinnedMessage:
+      type: object
+      properties:
+        eventId:
+          type: integer
+          example: 4
+        type:
+          type: string
+          example: "pinnedMessage"
+        payload:
+          type: object
+    EventDeletedMessage:
+      type: object
+      properties:
+        eventId:
+          type: integer
+          example: 3
+        type:
+          type: string
+          example: "deletedMessage"
+        payload:
+          type: object
+          properties:
+            msgId:
+              type: string
+              example: 57883346846815032
+            chat:
+              type: object
+              properties:
+                chatId:
+                  type: string
+                  example: 681869378@chat.agent
+                type:
+                  type: string
+                  example: channel
+                title:
+                  type: string
+                  example: The best channel
+            timestamp:
+              type: integer
+              example: 1546290000
+    EventEditedMessage:
+      type: object
+      properties:
+        eventId:
+          type: integer
+          example: 2
+        type:
+          type: string
+          example: "editedMessage"
+        payload:
+          type: object
+          properties:
+            editedTimestamp:
+              type: string
+              example: 1546290099
+    EventDataMessage:
+      type: object
+      properties:
+        eventId:
+          type: integer
+          example: 1
+        type:
+          type: string
+          example: "newMessage"
+        payload:
+          type: object
+          properties:
+            msgId:
+              type: string
+              example: 57883346846815032
+            chat:
+              type: object
+              properties:
+                chatId:
+                  type: string
+                  example: 681869378@chat.agent
+                type:
+                  type: string
+                  example: channel
+                title:
+                  type: string
+                  example: The best channel
+            from:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  example: 1234567890
+                firstName:
+                  type: string
+                  example: Name
+                lastName:
+                  type: string
+                  example: SurName
+            timestamp:
+              type: string
+              example: 1546290000
+            text:
+              type: string
+              example: Hello!
+            parts:
+              type: array
+              items:
+                oneOf:
+                - $ref: '#/components/schemas/Sticker'
+                - $ref: '#/components/schemas/Mention'
+                - $ref: '#/components/schemas/Voice'
+                - $ref: '#/components/schemas/File'
+                - $ref: '#/components/schemas/Forward'
+                - $ref: '#/components/schemas/Reply'
+    Reply:
+      type: object
+      properties:
+        type:
+          type: string
+          example: reply
+        payload:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Some message to reply
+    Forward:
+      type: object
+      properties:
+        type:
+          type: string
+          example: forward
+        payload:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Some message to forward
+    File:
+      type: object
+      properties:
+        type:
+          type: string
+          example: file
+        payload:
+          type: object
+          properties:
+            fileId:
+              type: string
+              example: 'ZhSnMuaOmF7FRez2jGWuQs5zGZwlLa0'
+            type:
+              type: string
+              example: image
+            caption:
+              type: string
+              example: 'Last weekend trip'
+    Voice:
+      type: object
+      properties:
+        type:
+          type: string
+          example: voice
+        payload:
+          type: object
+          properties:
+            fileId:
+              type: string
+              example: 'IdjUEXuGdNhLKUfD5rvkE03IOax54cD'
+    Sticker:
+      type: object
+      properties:
+        type:
+          type: string
+          example: stricker
+        payload:
+          type: object
+          properties:
+            fileId:
+              type: string
+              example: '2IWuJzaNWCJZxJWCvZhDYuJ5XDsr7hU'
+    Mention:
+      type: object
+      properties:
+        type:
+          type: string
+          example: mention
+        payload:
+          type: object
+          properties:
+            userId:
+              type: string
+              example: 1234567890
+            firstName:
+              type: string
+              example: Name
+            lastName:
+              type: string
+              example: SurName
+    EventDataTyping:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "typing"
+        eventData:
+          type: object
+          properties:
+            aimId:
+              type: string
+              example: 747432131
+            typingStatus:
+              type: string
+              example: "typing"
+    EventDataIM:
+      type: object
+      properties:
+        timestamp:
+          type: integer
+          example: 1556265378
+        msgId:
+          type: string
+          example: "c618a8a0-67f8-11e9-989d-b06ebf3aaeb5"
+        message:
+          type: string
+          example: "текст"
+        source:
+          $ref: '#/components/schemas/Source'
+    Source:
+      type: object
+      properties:
+        aimId:
+          type: string
+          example: 747432131
+          description: id пользователя или чата
+        friendly:
+          type: string
+          example: TestBot
+          description: имя пользователя или чата
+        userType:
+          type: string
+          example: interop
+          description: тип чата&#58; interop (личная переписка) или chat (группа)
+    Error:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          description: статус запроса
+          example: false
+        description:
+          type: string
+          description: описание ошибки
+          example: "aimsid check error: NOT_FOUND"
+  responses:
+    200OK:
+      description: Запрос успешно обработан
+      content:
+       application/json:
+        schema:
+          $ref: '#/components/schemas/Ok'
+    200MsgOK:
+      description: Запрос успешно обработан. Сервер вернул id сообщения
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Msg'
+    200MsgLoadFileOK:
+      description: Запрос успешно обработан. Сервер вернул id сообщения и id загруженного файлы
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MsgLoadFile'
+    200ChatInfoOK:
+      description: Запрос успешно обработан. Сервер вернул информацию о чате
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Chat'
+    200ChatAdminsOK:
+      description: Запрос успешно обработан. Сервер вернул список админов в чате
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Admins'
+    200FileInfoOK:
+      description: Запрос успешно обработан. Сервер вернул информацию о файле
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FileInfo'
+    200EventsGetOK:
+        description: Запрос успешно обработан. Сервер вернул входящие события.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Events'
